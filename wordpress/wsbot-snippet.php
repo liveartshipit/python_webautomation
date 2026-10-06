@@ -15,10 +15,10 @@
  */
 
 if ( ! defined( 'WSBOT_VERSION' ) ) {
-	define( 'WSBOT_VERSION', '2.3' );
+	define( 'WSBOT_VERSION', '2.4' );
 	define( 'WSBOT_DB_VERSION', '2' );
 	define( 'WSBOT_FAQ_URL', 'https://raw.githubusercontent.com/liveartshipit/python_webautomation/main/data/faq.json' );
-	define( 'WSBOT_WIDGET_URL', 'https://cdn.jsdelivr.net/gh/liveartshipit/python_webautomation@e41cda4cc516/widget/chatbot.js' );
+	define( 'WSBOT_WIDGET_URL', 'https://cdn.jsdelivr.net/gh/liveartshipit/python_webautomation@1575b5fc9907/widget/chatbot.js' );
 	define( 'WSBOT_LOG_DAYS', 90 );
 }
 
@@ -461,9 +461,9 @@ function wsbot_trending( $n = 4 ) {
 		$out = array();
 		foreach ( $picks as $pid ) {
 			if ( 'publish' === get_post_status( $pid ) ) {
-				$out[] = array( 'title' => html_entity_decode( get_the_title( $pid ), ENT_QUOTES, 'UTF-8' ), 'url' => get_permalink( $pid ), 'label' => 'Trending' );
+				$out[] = array( 'title' => html_entity_decode( get_the_title( $pid ), ENT_QUOTES, 'UTF-8' ), 'url' => get_permalink( $pid ), 'label' => 'Handpicked' );
 			}
-			if ( count( $out ) >= 6 ) {
+			if ( count( $out ) >= 12 ) {
 				break;
 			}
 		}
@@ -874,7 +874,7 @@ function wsbot_admin_page() {
 			<tr><th>Chat color</th><td><input type="text" name="color" value="<?php echo esc_attr( $saved['color'] ?? '#4f46e5' ); ?>"></td></tr>
 			<tr><th>Trending picks</th><td>
 				<input type="text" name="picks" class="large-text" value="<?php echo esc_attr( $saved['picks'] ?? '' ); ?>" placeholder="e.g. 762, 994, 750">
-				<p class="description">Post IDs, comma separated, in the order to show under "Popular reads" (first 6 shown, plus your newest post). Leave empty to rank automatically.</p>
+				<p class="description">Post IDs, comma separated, in the order to show under "Handpicked insights" (up to 12, first 5 shown with "Show more", plus your newest post). Leave empty to rank automatically.</p>
 			</td></tr>
 			<tr><th>Knowledge</th><td>
 				<?php echo is_array( $idx ) ? esc_html( sprintf( '%d pages, %d chunks. Last learned %s UTC. Re-learns automatically on publish.', $idx['posts'] ?? 0, count( $idx['docs'] ), $idx['generated'] ?? '' ) ) : 'Not learned yet.'; ?>
