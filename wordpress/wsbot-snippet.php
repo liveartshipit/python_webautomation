@@ -15,7 +15,7 @@
  */
 
 if ( ! defined( 'WSBOT_VERSION' ) ) {
-	define( 'WSBOT_VERSION', '2.0' );
+	define( 'WSBOT_VERSION', '2.2' );
 	define( 'WSBOT_DB_VERSION', '2' );
 	define( 'WSBOT_FAQ_URL', 'https://raw.githubusercontent.com/liveartshipit/python_webautomation/main/data/faq.json' );
 	define( 'WSBOT_WIDGET_URL', 'https://cdn.jsdelivr.net/gh/liveartshipit/python_webautomation@e41cda4cc516/widget/chatbot.js' );
@@ -99,10 +99,52 @@ function wsbot_tokenize( $s ) {
 	$out = array();
 	foreach ( $m[0] as $w ) {
 		if ( strlen( $w ) > 1 && ! isset( $stop[ $w ] ) ) {
-			$out[] = $w;
+			$out[] = wsbot_stem( $w );
 		}
 	}
 	return $out;
+}
+
+// Light stemming so "plans" matches "plan" and "cheapest" matches "cheap".
+function wsbot_stem( $w ) {
+	$n = strlen( $w );
+	if ( $n > 5 && substr( $w, -3 ) === 'est' ) {
+		return substr( $w, 0, -3 );
+	}
+	if ( $n > 5 && substr( $w, -3 ) === 'ing' ) {
+		return substr( $w, 0, -3 );
+	}
+	if ( $n > 4 && substr( $w, -3 ) === 'ies' ) {
+		return substr( $w, 0, -3 ) . 'y';
+	}
+	if ( $n > 3 && substr( $w, -1 ) === 's' && substr( $w, -2 ) !== 'ss' && substr( $w, -2 ) !== 'us' ) {
+		return substr( $w, 0, -1 );
+	}
+	return $w;
+}
+
+// Query-side synonyms (applied after stemming) so everyday words find the right paragraphs.
+function wsbot_expand( $tokens ) {
+	static $syn = array(
+		'cheap'     => array( 'price', 'pric', 'cost', 'plan', 'free' ),
+		'cost'      => array( 'price', 'pric', 'plan', 'free' ),
+		'price'     => array( 'pric', 'cost', 'plan', 'free' ),
+		'pric'      => array( 'price', 'cost', 'plan', 'free' ),
+		'expensive' => array( 'price', 'pric', 'cost', 'plan' ),
+		'afford'    => array( 'price', 'pric', 'cost', 'free' ),
+		'fee'       => array( 'price', 'pric', 'cost', 'plan' ),
+		'better'    => array( 'compar', 'vs', 'best' ),
+		'best'      => array( 'compar', 'vs', 'recommend' ),
+		'easy'      => array( 'beginner', 'simple', 'setup' ),
+		'beginner'  => array( 'easy', 'simple', 'start' ),
+	);
+	$out = $tokens;
+	foreach ( $tokens as $t ) {
+		if ( isset( $syn[ $t ] ) ) {
+			$out = array_merge( $out, $syn[ $t ] );
+		}
+	}
+	return array_unique( $out );
 }
 
 function wsbot_html_to_text( $html ) {
@@ -211,6 +253,7 @@ function wsbot_build_index() {
 		'avg'       => $sum / max( $n, 1 ),
 		'generated' => gmdate( 'c' ),
 		'posts'     => count( $posts ),
+		'v'         => 3,
 	);
 	update_option( 'wsbot_index', $idx, false );
 	return $idx;
@@ -220,7 +263,7 @@ function wsbot_index() {
 	static $idx = null;
 	if ( null === $idx ) {
 		$idx = get_option( 'wsbot_index' );
-		if ( ! is_array( $idx ) || empty( $idx['docs'] ) ) {
+		if ( ! is_array( $idx ) || empty( $idx['docs'] ) || ( $idx['v'] ?? 0 ) !== 3 ) {
 			$idx = wsbot_build_index();
 		}
 	}
@@ -254,26 +297,31 @@ add_action( 'init', function () {
 	}
 } );
 
+function wsbot_bm25( $idx, $d, $q ) {
+	$k1 = 1.4;
+	$b  = 0.75;
+	$s  = 0;
+	foreach ( $q as $t ) {
+		if ( empty( $d['tf'][ $t ] ) || ! isset( $idx['idf'][ $t ] ) ) {
+			continue;
+		}
+		$f  = $d['tf'][ $t ];
+		$s += $idx['idf'][ $t ] * ( ( $f * ( $k1 + 1 ) ) / ( $f + $k1 * ( 1 - $b + $b * $d['len'] / $idx['avg'] ) ) );
+	}
+	return $s;
+}
+
 function wsbot_search( $idx, $query, $k = 5, $exclude_url = '' ) {
-	$q = array_unique( wsbot_tokenize( $query ) );
+	$q = wsbot_expand( array_unique( wsbot_tokenize( $query ) ) );
 	if ( ! $q ) {
 		return array();
 	}
-	$k1     = 1.4;
-	$b      = 0.75;
 	$scored = array();
 	foreach ( $idx['docs'] as $i => $d ) {
 		if ( $exclude_url && $d['url'] === $exclude_url ) {
 			continue;
 		}
-		$s = 0;
-		foreach ( $q as $t ) {
-			if ( empty( $d['tf'][ $t ] ) ) {
-				continue;
-			}
-			$f  = $d['tf'][ $t ];
-			$s += $idx['idf'][ $t ] * ( ( $f * ( $k1 + 1 ) ) / ( $f + $k1 * ( 1 - $b + $b * $d['len'] / $idx['avg'] ) ) );
-		}
+		$s = wsbot_bm25( $idx, $d, $q );
 		if ( $s > 0 ) {
 			$scored[ $i ] = $s;
 		}
@@ -296,30 +344,23 @@ function wsbot_search( $idx, $query, $k = 5, $exclude_url = '' ) {
 }
 
 // Chunks of the page the visitor is on (when it is a worksmarto post/page), best match first.
-function wsbot_page_chunks( $idx, $url, $query, $k = 2 ) {
-	$url  = wsbot_no_query( $url );
+function wsbot_page_chunks( $idx, $url, $query, $k = 3 ) {
+	$url  = untrailingslashit( wsbot_no_query( $url ) );
+	$q    = wsbot_expand( array_unique( wsbot_tokenize( $query ) ) );
 	$hits = array();
-	foreach ( $idx['docs'] as $d ) {
-		if ( untrailingslashit( $d['url'] ) === untrailingslashit( $url ) ) {
-			$hits[] = $d;
+	foreach ( $idx['docs'] as $i => $d ) {
+		if ( untrailingslashit( $d['url'] ) === $url ) {
+			$hits[] = array( wsbot_bm25( $idx, $d, $q ), -$i, $d );
 		}
 	}
 	if ( ! $hits ) {
 		return array();
 	}
-	$q = wsbot_tokenize( $query );
-	usort( $hits, function ( $a, $b ) use ( $q ) {
-		$sa = 0;
-		$sb = 0;
-		foreach ( $q as $t ) {
-			$sa += $a['tf'][ $t ] ?? 0;
-			$sb += $b['tf'][ $t ] ?? 0;
-		}
-		return $sb <=> $sa;
-	} );
+	rsort( $hits ); // best match first; earlier paragraphs win ties
 	$out = array();
-	foreach ( array_slice( $hits, 0, $k ) as $d ) {
-		$out[] = array( 'title' => $d['title'], 'url' => $d['url'], 'text' => $d['text'], 'kind' => $d['kind'], 'score' => 0 );
+	foreach ( array_slice( $hits, 0, $k ) as $h ) {
+		$d     = $h[2];
+		$out[] = array( 'title' => $d['title'], 'url' => $d['url'], 'text' => $d['text'], 'kind' => $d['kind'], 'score' => $h[0] );
 	}
 	return $out;
 }
@@ -582,7 +623,7 @@ function wsbot_chat( WP_REST_Request $req ) {
 	// Related reads: other good matches not already linked in the reply.
 	$related = array();
 	foreach ( $sources as $s ) {
-		if ( 'faq' === $s['kind'] || false !== strpos( $reply, $s['url'] ) || untrailingslashit( $s['url'] ) === untrailingslashit( wsbot_no_query( $page['url'] ) ) ) {
+		if ( 'post' !== $s['kind'] || false !== strpos( $reply, $s['url'] ) || untrailingslashit( $s['url'] ) === untrailingslashit( wsbot_no_query( $page['url'] ) ) ) {
 			continue;
 		}
 		$related[ $s['url'] ] = array( 'title' => $s['title'], 'url' => $s['url'] );
