@@ -194,13 +194,13 @@
     var chips = [];
     if (IS_ARTICLE && PAGE_TITLE) {
       addBot("Questions about this guide? I can explain \"" + PAGE_TITLE + "\" or anything else on Worksmarto.");
-      chips = ["Summarize this guide", "Popular reads", "Take the tour"];
+      chips = ["Handpicked insights", "Summarize this guide", "Take the tour"];
     } else if (IS_SAAS) {
       addBot("Hi! Questions about " + (PAGE_TITLE || "this tool") + "? I can help you use it, or answer anything about Worksmarto.");
-      chips = ["How does this tool work?", "Popular reads", "Contact the team"];
+      chips = ["Handpicked insights", "How does this tool work?", "Contact the team"];
     } else {
       addBot("Hi! Ask me anything about AI tools, automation workflows or Worksmarto.");
-      chips = ["Take the tour", "Popular reads", "What is an MCP server?", "Contact the team"];
+      chips = ["Handpicked insights", "Take the tour", "What is an MCP server?", "Contact the team"];
     }
     var row = el("div", { class: "wsc-chips" });
     chips.forEach(function (c) {
@@ -214,7 +214,7 @@
 
   function onChip(c) {
     if (c === "Take the tour") return startTour();
-    if (c === "Popular reads") return showPopular();
+    if (c === "Handpicked insights") return showPopular();
     if (c === "Summarize this guide") return send("Summarize this guide in a few bullet points.", c);
     send(c);
   }
@@ -230,7 +230,7 @@
         var s = steps[step];
         card.innerHTML = '<span class="wsc-step">Tour ' + (step + 1) + " of " + steps.length + "</span><h4>" + esc(s.title) + "</h4><p>" + esc(s.text) + "</p>" +
           '<div class="wsc-chips">' + (s.url ? '<a class="wsc-chip" href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.cta || "Open") + "</a>" : "") +
-          (step < steps.length - 1 ? '<button class="wsc-btnp" type="button" data-n>Next</button>' : '<button class="wsc-btnp" type="button" data-p>Show popular reads</button>') + "</div>";
+          (step < steps.length - 1 ? '<button class="wsc-btnp" type="button" data-n>Next</button>' : '<button class="wsc-btnp" type="button" data-p>Show handpicked insights</button>') + "</div>";
         var n = card.querySelector("[data-n]");
         if (n) n.onclick = function () { step++; draw(); scroll(); };
         var p = card.querySelector("[data-p]");
@@ -241,17 +241,25 @@
     });
   }
 
-  /* ---------- popular reads ---------- */
+  /* ---------- handpicked insights ---------- */
   function showPopular() {
     loadWelcome().then(function (w) {
       var list = w.trending || [];
       if (!list.length) return addBot("Browse the latest guides at https://worksmarto.com/blog/");
-      var card = el("div", { class: "wsc-card" }, "<h4>Worth reading</h4>");
+      var card = el("div", { class: "wsc-card" }, "<h4>Handpicked insights</h4><p>Real builds and experiments, worth reading first.</p>");
       var ul = el("ul", { class: "wsc-list" });
-      list.forEach(function (p) {
-        ul.appendChild(el("li", null, '<span class="wsc-tag">' + esc(p.label || "") + '</span><a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(p.title) + "</a>"));
+      list.forEach(function (p, i) {
+        var li = el("li", null, (p.label === "New" ? '<span class="wsc-tag">New</span>' : "") + '<a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(p.title) + "</a>");
+        if (i >= 5) li.hidden = true;
+        ul.appendChild(li);
       });
       card.appendChild(ul);
+      if (list.length > 5) {
+        var more = el("button", { class: "wsc-btns", type: "button" });
+        more.textContent = "Show " + (list.length - 5) + " more";
+        more.onclick = function () { ul.querySelectorAll("li[hidden]").forEach(function (li) { li.hidden = false; }); more.remove(); scroll(); };
+        card.appendChild(more);
+      }
       addNode(card);
     });
   }
