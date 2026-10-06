@@ -4,7 +4,7 @@
  *
  * - Learns every published post/page straight from WordPress, re-learning seconds after Publish.
  * - Page-aware: answers about the article or micro SaaS page the visitor is on first.
- * - Suggests related and popular reads, shows a short tour to new visitors.
+ * - Suggests related and hand-picked trending reads, shows a short tour to new visitors.
  * - Email capture with explicit consent (+ Jetpack double opt-in when available).
  * - Anonymous chat log with "unanswered questions" report (emails/phones redacted, 90-day retention).
  * - Works on worksmarto.com and its subdomains (micro SaaS sites).
@@ -277,6 +277,7 @@ add_action( 'transition_post_status', function ( $new, $old, $post ) {
 		return;
 	}
 	if ( 'publish' === $new || 'publish' === $old ) {
+		delete_transient( 'wsbot_trending' );
 		if ( ! wp_next_scheduled( 'wsbot_rebuild' ) ) {
 			wp_schedule_single_event( time() + 5, 'wsbot_rebuild' );
 		}
@@ -447,7 +448,7 @@ function wsbot_clean_page( $page ) {
 	);
 }
 
-/* ================= Popular + tour ================= */
+/* ================= Trending + tour ================= */
 
 function wsbot_trending( $n = 4 ) {
 	$cached = get_transient( 'wsbot_trending' );
