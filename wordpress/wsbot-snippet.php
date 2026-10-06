@@ -4,7 +4,7 @@
  *
  * - Learns every published post/page straight from WordPress, re-learning seconds after Publish.
  * - Page-aware: answers about the article or micro SaaS page the visitor is on first.
- * - Suggests related and hand-picked trending reads, shows a short tour to new visitors.
+ * - Suggests related reads and "Handpicked insights", shows a short tour to new visitors.
  * - Email capture with explicit consent (+ Jetpack double opt-in when available).
  * - Anonymous chat log with "unanswered questions" report (emails/phones redacted, 90-day retention).
  * - Works on worksmarto.com and its subdomains (micro SaaS sites).
@@ -455,7 +455,7 @@ function wsbot_trending( $n = 4 ) {
 	if ( is_array( $cached ) ) {
 		return $cached;
 	}
-	// Hand-picked practical articles (Settings -> Worksmarto Bot -> Trending picks) come first.
+	// Handpicked insights (Settings -> Worksmarto Bot -> Trending picks) come first.
 	$picks = array_filter( array_map( 'absint', explode( ',', (string) wsbot_opt( 'picks', '' ) ) ) );
 	if ( $picks ) {
 		$out = array();
@@ -872,8 +872,8 @@ function wsbot_admin_page() {
 				<p class="description">Comma separated. If one is busy, the next one answers. Leave empty for the defaults shown.</p>
 			</td></tr>
 			<tr><th>Chat color</th><td><input type="text" name="color" value="<?php echo esc_attr( $saved['color'] ?? '#4f46e5' ); ?>"></td></tr>
-			<tr><th>Trending picks</th><td>
-				<input type="text" name="picks" class="large-text" value="<?php echo esc_attr( $saved['picks'] ?? '' ); ?>" placeholder="e.g. 762, 994, 750">
+			<tr><th>Handpicked insights</th><td>
+				<input type="text" name="picks" class="large-text" value="<?php echo esc_attr( $saved['picks'] ?? '' ); ?>" placeholder="e.g. 1059, 1075, 649">
 				<p class="description">Post IDs, comma separated, in the order to show under "Handpicked insights" (up to 12, first 5 shown with "Show more", plus your newest post). Leave empty to rank automatically.</p>
 			</td></tr>
 			<tr><th>Knowledge</th><td>
