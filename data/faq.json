@@ -1,0 +1,80 @@
+[
+  {
+    "q": "What is Worksmarto?",
+    "a": "Worksmarto is a blog about AI workflow automation and productivity tools for freelancers and startups. It shares real, tested workflows, tool comparisons and experiments from running a blog, micro-SaaS tools, a mobile app and a print-on-demand store with AI.",
+    "keys": ["what is worksmarto", "about worksmarto", "who are you", "what do you do", "what is this site"],
+    "url": "https://worksmarto.com/about/"
+  },
+  {
+    "q": "How do I contact Worksmarto?",
+    "a": "You can reach the team through the Contact Us page.",
+    "keys": ["contact", "email", "reach you", "talk to human", "support", "get in touch"],
+    "url": "https://worksmarto.com/contact-us/"
+  },
+  {
+    "q": "What is an MCP server?",
+    "a": "MCP (Model Context Protocol) lets AI assistants like Claude connect directly to real tools such as WordPress, Todoist and GitHub, so you can tell the AI what you want and it uses the tool for you. Worksmarto has a 2-minute explainer.",
+    "keys": ["what is mcp", "mcp server", "model context protocol", "mcp connector"],
+    "url": "https://worksmarto.com/what-is-mcp-server/"
+  },
+  {
+    "q": "Do you have a free AI workflow generator?",
+    "a": "Yes. Architect (architect.worksmarto.com) is a free AI workflow generator. You can get 5 free plans with no account, and unlimited free plans with an account. Type a task like \"Instagram\" and get a downloadable automation plan.",
+    "keys": ["workflow generator", "architect", "free tool", "automation plan", "generate workflow"],
+    "url": "https://worksmarto.com/micro-saas-everywhere-i-built-one-too-architect-worksmarto-com-free/"
+  },
+  {
+    "q": "Is there an AI news site?",
+    "a": "Yes. Worksmarto AI News (news.worksmarto.com) is a free daily AI news site with AI summaries. The build story is on the blog.",
+    "keys": ["ai news", "news site", "daily news", "news.worksmarto"],
+    "url": "https://worksmarto.com/build-ai-news-site-claude-code-phone/"
+  },
+  {
+    "q": "What is the Idea Wheel?",
+    "a": "The Idea Wheel is a spin-the-wheel tool for AI freelance service and solo product ideas, with tools, free resources and workflows for each idea.",
+    "keys": ["idea wheel", "spin", "business ideas", "freelance ideas", "product ideas"],
+    "url": "https://worksmarto.com/idea-wheel/"
+  },
+  {
+    "q": "What is the Innovation Lab?",
+    "a": "The Innovation Lab page showcases Worksmarto's experiments and tools.",
+    "keys": ["innovation lab", "experiments", "your tools", "projects"],
+    "url": "https://worksmarto.com/innovation-lab/"
+  },
+  {
+    "q": "Which is better: Zapier, Make or n8n?",
+    "a": "Worksmarto built the same automation in Zapier, Make and n8n side by side to compare them. The full comparison covers setup, pricing and where each one fits.",
+    "keys": ["zapier", "make.com", "n8n", "zapier vs make", "best automation tool"],
+    "url": "https://worksmarto.com/same-automation-three-tools-zapier-vs-make-vs-n8n-built-side-by-side/"
+  },
+  {
+    "q": "What tools does Worksmarto use?",
+    "a": "The Worksmarto Stack article lists the real tools, their real costs and what is worth cancelling.",
+    "keys": ["your stack", "tools you use", "what tools", "tech stack", "costs"],
+    "url": "https://worksmarto.com/the-worksmarto-stack-real-costs-what-id-cancel/"
+  },
+  {
+    "q": "How do I start with AI automation without coding?",
+    "a": "Start with one small workflow. The 30-minute first AI workflow guide is a good copy-and-follow starting point, and the Freelancer's AI Playbook covers 10 tasks you can automate without code.",
+    "keys": ["start automation", "no code", "beginner", "first workflow", "without coding"],
+    "url": "https://worksmarto.com/your-first-ai-workflow-a-30-minute-build-you-can-copy/"
+  },
+  {
+    "q": "Who writes for Worksmarto?",
+    "a": "Articles are written by the Worksmarto team and paid freelance contributors. See the Our Authors page.",
+    "keys": ["authors", "who writes", "writers", "team"],
+    "url": "https://worksmarto.com/authors/"
+  },
+  {
+    "q": "What is your privacy policy?",
+    "a": "The Privacy Policy explains what data is collected and how it is used, under India's DPDP Act and GDPR.",
+    "keys": ["privacy", "data", "gdpr", "dpdp", "cookies"],
+    "url": "https://worksmarto.com/privacy-policy/"
+  },
+  {
+    "q": "How does the Google Play 12 tester rule work?",
+    "a": "Personal Play Console accounts need 12 testers opted in for 14 continuous days before publishing to production. Worksmarto explains exactly how it works in 2026.",
+    "keys": ["12 testers", "google play testers", "play console", "closed testing"],
+    "url": "https://worksmarto.com/google-play-12-tester-requirement-in-2026-how-it-actually-works/"
+  }
+]
