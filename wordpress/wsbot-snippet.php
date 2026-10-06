@@ -30,7 +30,7 @@ function wsbot_providers() {
 		'gemini'     => array(
 			'label'  => 'Google Gemini',
 			'url'    => 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
-			'models' => 'gemini-2.5-flash, gemini-2.5-flash-lite',
+			'models' => 'gemini-3.5-flash-lite, gemini-3.8-flash, gemini-3.1-flash-lite',
 		),
 	);
 }
@@ -75,7 +75,7 @@ function wsbot_settings_page() {
 		echo '<div class="notice notice-success"><p>Saved.</p></div>';
 	}
 
-	$provider = $saved['provider'] ?? 'openrouter';
+	$provider = $saved['provider'] ?? 'gemini';
 	$has_key  = ! empty( $saved['keys'][ $provider ] );
 	?>
 	<div class="wrap">
@@ -232,7 +232,7 @@ add_action( 'rest_api_init', function () {
 		'methods'             => 'GET',
 		'callback'            => function () {
 			$idx      = wsbot_index();
-			$provider = wsbot_opt( 'provider', 'openrouter' );
+			$provider = wsbot_opt( 'provider', 'gemini' );
 			$keys     = (array) wsbot_opt( 'keys', array() );
 			return array(
 				'ok'        => (bool) $idx,
@@ -261,7 +261,7 @@ function wsbot_chat( WP_REST_Request $req ) {
 		return wsbot_err( 'Not allowed.', 403 );
 	}
 
-	$provider  = wsbot_opt( 'provider', 'openrouter' );
+	$provider  = wsbot_opt( 'provider', 'gemini' );
 	$providers = wsbot_providers();
 	$keys      = (array) wsbot_opt( 'keys', array() );
 	$key       = $keys[ $provider ] ?? '';
@@ -316,7 +316,7 @@ function wsbot_chat( WP_REST_Request $req ) {
 				'HTTP-Referer'  => home_url(),
 				'X-Title'       => 'Worksmarto Assistant',
 			),
-			'body'    => wp_json_encode( array( 'model' => $model, 'messages' => $messages, 'temperature' => 0.3, 'max_tokens' => 400 ) ),
+			'body'    => wp_json_encode( array( 'model' => $model, 'messages' => $messages, 'temperature' => 0.3, 'max_tokens' => 800 ) ),
 		) );
 		if ( is_wp_error( $res ) || 200 !== wp_remote_retrieve_response_code( $res ) ) {
 			continue; // try the next model
@@ -337,7 +337,7 @@ add_action( 'wp_footer', function () {
 		return;
 	}
 	$keys = (array) wsbot_opt( 'keys', array() );
-	if ( empty( $keys[ wsbot_opt( 'provider', 'openrouter' ) ] ) ) {
+	if ( empty( $keys[ wsbot_opt( 'provider', 'gemini' ) ] ) ) {
 		return; // no key yet: keep the bubble hidden
 	}
 	printf(
