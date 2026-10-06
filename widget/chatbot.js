@@ -12,6 +12,8 @@
   var API = (script && script.dataset.api || "").replace(/\/$/, "");
   var COLOR = (script && script.dataset.color) || "#4f46e5";
   var TITLE = (script && script.dataset.title) || "Worksmarto Assistant";
+  // "left" keeps the bubble clear of other chat widgets (e.g. Tidio) on the right
+  var SIDE = (script && script.dataset.position) === "left" ? "left" : "right";
   var FAQ_URL = (script && script.dataset.faq) ||
     "https://cdn.jsdelivr.net/gh/liveartshipit/python_webautomation@main/data/faq.json";
   var GREETING = "Hi! Ask me anything about AI tools, automation workflows or Worksmarto.";
@@ -24,9 +26,9 @@
   var busy = false;
 
   var css = "\
-#wsc-btn{position:fixed;right:20px;bottom:20px;width:58px;height:58px;border-radius:50%;border:0;cursor:pointer;background:" + COLOR + ";color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:2147483000;display:flex;align-items:center;justify-content:center;transition:transform .15s}\
+#wsc-btn{position:fixed;" + SIDE + ":20px;bottom:20px;width:58px;height:58px;border-radius:50%;border:0;cursor:pointer;background:" + COLOR + ";color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:2147483000;display:flex;align-items:center;justify-content:center;transition:transform .15s}\
 #wsc-btn:hover{transform:scale(1.06)}\
-#wsc-box{position:fixed;right:20px;bottom:90px;width:370px;max-width:calc(100vw - 32px);height:540px;max-height:calc(100vh - 120px);background:#fff;border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,.22);z-index:2147483000;display:none;flex-direction:column;overflow:hidden;font:15px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1f2937}\
+#wsc-box{position:fixed;" + SIDE + ":20px;bottom:90px;width:370px;max-width:calc(100vw - 32px);height:540px;max-height:calc(100vh - 120px);background:#fff;border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,.22);z-index:2147483000;display:none;flex-direction:column;overflow:hidden;font:15px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1f2937}\
 #wsc-box.open{display:flex}\
 #wsc-head{background:" + COLOR + ";color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;font-weight:600}\
 #wsc-head button{background:none;border:0;color:#fff;font-size:22px;cursor:pointer;line-height:1}\
