@@ -17,6 +17,8 @@
   var TOUR_ON = ds.tour !== "0";
   var CAPTURE_ON = ds.capture !== "0";
   var PRIVACY = ds.privacy || "https://worksmarto.com/privacy-policy/";
+  var AI_NAME = ds.ai || "an AI provider";
+  var TERMS = ds.terms || "https://worksmarto.com/terms-and-conditions/";
   var FAQ_URL = ds.faq || "https://cdn.jsdelivr.net/gh/liveartshipit/python_webautomation@main/data/faq.json";
   var CONSENT_TEXT = "I agree to receive emails with new AI workflows from Worksmarto. I can unsubscribe anytime.";
 
@@ -129,7 +131,7 @@
     '<div id="wsc-head"><span>' + esc(TITLE) + '<small>AI assistant</small></span><button type="button" aria-label="Close">&times;</button></div>' +
     '<div id="wsc-msgs" aria-live="polite"></div>' +
     '<form id="wsc-form"><input id="wsc-in" placeholder="Type your question..." autocomplete="off" maxlength="600" aria-label="Your question"><button id="wsc-send" type="submit">Send</button></form>' +
-    '<div id="wsc-foot">AI answers can be wrong. Chats are stored anonymously to improve answers; please don\'t share personal details. <a href="' + esc(PRIVACY) + '" target="_blank" rel="noopener">Privacy</a></div>');
+    '<div id="wsc-foot">AI assistant (answers by ' + esc(AI_NAME) + ') for ages 18+. Answers can be wrong and are not professional advice. Don\'t share personal details; chats are stored anonymously for 90 days. <a href="' + esc(PRIVACY) + '" target="_blank" rel="noopener">Privacy</a> · <a href="' + esc(TERMS) + '" target="_blank" rel="noopener">Terms</a></div>');
   document.body.appendChild(btn);
   document.body.appendChild(box);
 
@@ -337,6 +339,7 @@
           out = j.reply || "";
           answered = j.answered !== false;
           related = j.related || [];
+          if (j.declined) captureShown = true;
           bubble.innerHTML = render(out);
           scroll();
         });
