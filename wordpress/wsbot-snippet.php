@@ -12,7 +12,7 @@
 if ( ! defined( 'WSBOT_VERSION' ) ) {
 	define( 'WSBOT_VERSION', '1.0' );
 	define( 'WSBOT_KNOWLEDGE_URL', 'https://raw.githubusercontent.com/liveartshipit/python_webautomation/main/data/knowledge.json' );
-	define( 'WSBOT_WIDGET_URL', 'https://cdn.jsdelivr.net/gh/liveartshipit/python_webautomation@c11d85b80125/widget/chatbot.js' );
+	define( 'WSBOT_WIDGET_URL', 'https://cdn.jsdelivr.net/gh/liveartshipit/python_webautomation@75edfb8fd6e3/widget/chatbot.js' );
 }
 
 function wsbot_providers() {
@@ -341,7 +341,7 @@ add_action( 'wp_footer', function () {
 		return; // no key yet: keep the bubble hidden
 	}
 	printf(
-		'<script src="%s" data-api="%s" data-color="%s" defer></script>',
+		'<script src="%s" data-api="%s" data-color="%s" data-position="left" defer></script>',
 		esc_url( WSBOT_WIDGET_URL ),
 		esc_url( untrailingslashit( rest_url( 'wsbot/v1' ) ) ),
 		esc_attr( wsbot_opt( 'color', '#4f46e5' ) )
