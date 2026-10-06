@@ -171,6 +171,10 @@
           throw new Error(j.error || "Something went wrong. Please try again.");
         });
       }
+      // WordPress backend replies with JSON {reply}; the Cloudflare Worker streams
+      if ((res.headers.get("Content-Type") || "").indexOf("application/json") !== -1) {
+        return res.json().then(function (j) { out = j.reply || ""; bubble.innerHTML = render(out); scroll(); });
+      }
       var reader = res.body.getReader();
       var dec = new TextDecoder();
       var buf = "";
