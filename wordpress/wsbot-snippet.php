@@ -15,7 +15,7 @@
  */
 
 if ( ! defined( 'WSBOT_VERSION' ) ) {
-	define( 'WSBOT_VERSION', '2.2' );
+	define( 'WSBOT_VERSION', '2.3' );
 	define( 'WSBOT_DB_VERSION', '2' );
 	define( 'WSBOT_FAQ_URL', 'https://raw.githubusercontent.com/liveartshipit/python_webautomation/main/data/faq.json' );
 	define( 'WSBOT_WIDGET_URL', 'https://cdn.jsdelivr.net/gh/liveartshipit/python_webautomation@e41cda4cc516/widget/chatbot.js' );
@@ -454,6 +454,25 @@ function wsbot_trending( $n = 4 ) {
 	if ( is_array( $cached ) ) {
 		return $cached;
 	}
+	// Hand-picked practical articles (Settings -> Worksmarto Bot -> Trending picks) come first.
+	$picks = array_filter( array_map( 'absint', explode( ',', (string) wsbot_opt( 'picks', '' ) ) ) );
+	if ( $picks ) {
+		$out = array();
+		foreach ( $picks as $pid ) {
+			if ( 'publish' === get_post_status( $pid ) ) {
+				$out[] = array( 'title' => html_entity_decode( get_the_title( $pid ), ENT_QUOTES, 'UTF-8' ), 'url' => get_permalink( $pid ), 'label' => 'Trending' );
+			}
+			if ( count( $out ) >= 6 ) {
+				break;
+			}
+		}
+		$latest = get_posts( array( 'numberposts' => 1, 'post_status' => 'publish' ) );
+		if ( $latest && ! in_array( $latest[0]->ID, $picks, true ) ) {
+			$out[] = array( 'title' => html_entity_decode( get_the_title( $latest[0] ), ENT_QUOTES, 'UTF-8' ), 'url' => get_permalink( $latest[0] ), 'label' => 'New' );
+		}
+		set_transient( 'wsbot_trending', $out, 15 * MINUTE_IN_SECONDS );
+		return $out;
+	}
 	global $wpdb;
 	$t     = wsbot_tables();
 	$rows  = $wpdb->get_col( $wpdb->prepare( "SELECT cited FROM {$t['log']} WHERE answered = 1 AND cited <> '' AND created > %s", gmdate( 'Y-m-d H:i:s', time() - 30 * DAY_IN_SECONDS ) ) );
@@ -814,7 +833,9 @@ function wsbot_admin_page() {
 			'color'    => sanitize_hex_color( wp_unslash( $_POST['color'] ?? '' ) ) ?: '#4f46e5',
 			'tour'     => ! empty( $_POST['tour'] ) ? 1 : 0,
 			'capture'  => ! empty( $_POST['capture'] ) ? 1 : 0,
+			'picks'    => implode( ',', array_filter( array_map( 'absint', explode( ',', (string) wp_unslash( $_POST['picks'] ?? '' ) ) ) ) ),
 		);
+		delete_transient( 'wsbot_trending' );
 		update_option( 'wsbot_settings', $saved, false );
 		echo '<div class="notice notice-success"><p>Saved.</p></div>';
 	}
@@ -850,6 +871,10 @@ function wsbot_admin_page() {
 				<p class="description">Comma separated. If one is busy, the next one answers. Leave empty for the defaults shown.</p>
 			</td></tr>
 			<tr><th>Chat color</th><td><input type="text" name="color" value="<?php echo esc_attr( $saved['color'] ?? '#4f46e5' ); ?>"></td></tr>
+			<tr><th>Trending picks</th><td>
+				<input type="text" name="picks" class="large-text" value="<?php echo esc_attr( $saved['picks'] ?? '' ); ?>" placeholder="e.g. 762, 994, 750">
+				<p class="description">Post IDs, comma separated, in the order to show under "Popular reads" (first 6 shown, plus your newest post). Leave empty to rank automatically.</p>
+			</td></tr>
 			<tr><th>Knowledge</th><td>
 				<?php echo is_array( $idx ) ? esc_html( sprintf( '%d pages, %d chunks. Last learned %s UTC. Re-learns automatically on publish.', $idx['posts'] ?? 0, count( $idx['docs'] ), $idx['generated'] ?? '' ) ) : 'Not learned yet.'; ?>
 				<button class="button" name="wsbot_relearn" value="1">Re-learn now</button>
